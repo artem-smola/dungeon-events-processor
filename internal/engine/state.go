@@ -91,11 +91,11 @@ func (e *Engine) player(id int) *playerState {
 		health:         maxHealth,
 		enteredAt:      -1,
 		endedAt:        -1,
-		bossEnteredAt:    -1,
+		bossEnteredAt:  -1,
 		bossKilledAt:   -1,
 		floorKills:     make([]int, e.regularFloors+1),
 		floorCompleted: make([]bool, e.regularFloors+1),
-		floorTimes:   make([]int, e.regularFloors+1),
+		floorTimes:     make([]int, e.regularFloors+1),
 	}
 	e.players[id] = p
 	return p
