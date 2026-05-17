@@ -24,6 +24,7 @@ func (e *Engine) handleEnter(p *playerState, ev model.Event) {
 		return
 	}
 	if ev.TimeSec < e.openAtSec || ev.TimeSec >= e.closeAtSec {
+		e.impossible(p, ev)
 		return
 	}
 
@@ -111,7 +112,11 @@ func (e *Engine) handleEnterBoss(p *playerState, ev model.Event) {
 
 	e.stopFloorTimer(p, ev.TimeSec)
 	p.onBoss = true
-	e.startBossTimer(p, ev.TimeSec)
+
+	if !p.bossKilled {
+		e.startBossTimer(p, ev.TimeSec)
+	}
+
 	e.log(ev.TimeText, p.id, "entered the boss's floor")
 }
 
