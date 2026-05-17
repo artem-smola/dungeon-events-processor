@@ -45,6 +45,25 @@ func (e *Engine) stopFloorTimer(p *playerState, timeSec int) {
 	p.floorTimerIsActive = false
 }
 
+func (e *Engine) startBossTimer(p *playerState, timeSec int) {
+	if !p.onBoss || p.bossTimerIsActive {
+		return
+	}
+	p.bossStartedAt = timeSec
+	p.bossTimerIsActive = true
+}
+
+func (e *Engine) stopBossTimer(p *playerState, timeSec int) {
+	if !p.bossTimerIsActive {
+		return
+	}
+	if timeSec < p.bossStartedAt {
+		return
+	}
+	p.bossElapsed += timeSec - p.bossStartedAt
+	p.bossTimerIsActive = false
+}
+
 func (e *Engine) endPlayer(p *playerState, forcedState model.ChallengeState, timeSec int) {
 	if p.ended {
 		return
@@ -52,6 +71,7 @@ func (e *Engine) endPlayer(p *playerState, forcedState model.ChallengeState, tim
 	if timeSec < p.enteredAt {
 		timeSec = p.enteredAt
 	}
+	e.stopBossTimer(p, timeSec)
 
 	p.inDungeon = false
 	p.ended = true
@@ -91,8 +111,7 @@ func (e *Engine) player(id int) *playerState {
 		health:         maxHealth,
 		enteredAt:      -1,
 		endedAt:        -1,
-		bossEnteredAt:  -1,
-		bossKilledAt:   -1,
+		bossStartedAt:  -1,
 		floorKills:     make([]int, e.regularFloors+1),
 		floorCompleted: make([]bool, e.regularFloors+1),
 		floorTimes:     make([]int, e.regularFloors+1),

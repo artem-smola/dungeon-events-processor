@@ -32,8 +32,10 @@ func (e *Engine) handleEnter(p *playerState, ev model.Event) {
 	p.endedAt = ev.TimeSec
 	p.currentFloor = 1
 	p.onBoss = false
-	p.bossEnteredAt = -1
-	p.bossKilledAt = -1
+	p.bossKilled = false
+	p.bossElapsed = 0
+	p.bossStartedAt = -1
+	p.bossTimerIsActive = false
 
 	if e.regularFloors > 0 {
 		e.tryAutoCompleteCurrentFloor(p)
@@ -83,13 +85,15 @@ func (e *Engine) handleNextFloor(p *playerState, ev model.Event) {
 }
 
 func (e *Engine) handlePrevFloor(p *playerState, ev model.Event) {
-	if !p.inDungeon || p.onBoss || p.currentFloor <= 1 {
+	if !p.inDungeon || p.currentFloor <= 1 {
 		e.impossible(p, ev)
 		return
 	}
 
 	e.stopFloorTimer(p, ev.TimeSec)
+	e.stopBossTimer(p, ev.TimeSec)
 	p.currentFloor--
+	p.onBoss = false
 	e.tryAutoCompleteCurrentFloor(p)
 	e.startFloorTimer(p, ev.TimeSec)
 	e.log(ev.TimeText, p.id, "went to the previous floor")
@@ -107,9 +111,7 @@ func (e *Engine) handleEnterBoss(p *playerState, ev model.Event) {
 
 	e.stopFloorTimer(p, ev.TimeSec)
 	p.onBoss = true
-	if p.bossEnteredAt < 0 {
-		p.bossEnteredAt = ev.TimeSec
-	}
+	e.startBossTimer(p, ev.TimeSec)
 	e.log(ev.TimeText, p.id, "entered the boss's floor")
 }
 
@@ -120,7 +122,7 @@ func (e *Engine) handleKillBoss(p *playerState, ev model.Event) {
 	}
 
 	p.bossKilled = true
-	p.bossKilledAt = ev.TimeSec
+	e.stopBossTimer(p, ev.TimeSec)
 	e.log(ev.TimeText, p.id, "killed the boss")
 }
 

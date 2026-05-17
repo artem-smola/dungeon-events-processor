@@ -37,11 +37,13 @@ type playerState struct {
 	enteredAt int
 	endedAt   int
 
-	currentFloor  int
-	onBoss        bool
-	bossEnteredAt int
-	bossKilledAt  int
-	bossKilled    bool
+	currentFloor int
+	onBoss       bool
+	bossKilled   bool
+	bossElapsed  int
+
+	bossStartedAt     int
+	bossTimerIsActive bool
 
 	floorKills         []int
 	floorCompleted     []bool
@@ -143,8 +145,8 @@ func (e *Engine) avgFloorTime(p *playerState) int {
 }
 
 func (e *Engine) bossTime(p *playerState) int {
-	if !p.bossKilled || p.bossEnteredAt < 0 || p.bossKilledAt < p.bossEnteredAt {
+	if !p.bossKilled {
 		return 0
 	}
-	return p.bossKilledAt - p.bossEnteredAt
+	return p.bossElapsed
 }
